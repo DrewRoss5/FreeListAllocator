@@ -9,8 +9,9 @@ int main(){
     int* myPtr = (int*) allocator.alloc(sizeof(int) * 10);
     for (int i = 0; i < 10; i++)
         myPtr[i] = i + 1;
-    // test C string
-    char* cStr = (char*) allocator.alloc(sizeof(char) * 20);
+    int* ptr2 = (int*) allocator.alloc(sizeof(int) * 20);
     allocator.dealloc(myPtr);
-    allocator.dealloc(cStr);
+    allocator.dealloc(ptr2);
+    
+
 }

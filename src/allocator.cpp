@@ -23,6 +23,12 @@ ListAllocator::ListAllocator(unsigned int size){
     this->max = static_cast<void*>(((char*) head) + size);
 }
 
+ListAllocator::~ListAllocator(){
+    if (munmap(this->head, this->size))
+        std::cout << "Failed unmap" << std::endl;
+}
+
+// allocates a new void pointer of the specified size to the list
 void* ListAllocator::alloc(unsigned int size){
     if (this->size < size)
         return nullptr;
@@ -50,14 +56,14 @@ void* ListAllocator::alloc(unsigned int size){
         }
         // continue traversing the list
         prev = cur;
-        cur = cur->next;
-        
+        cur = cur->next;   
     }
     // no block could be found, return a nullptr
     return nullptr;
 }
 
-
+// deallocates a pointer and returns the memory to the free list
+// throws a std::bad_alloc if the pointer was not allocated by this allocator
 void ListAllocator::dealloc(void* ptr){
     if (ptr > max || ptr < min)
         throw std::bad_alloc();
@@ -79,8 +85,14 @@ void ListAllocator::dealloc(void* ptr){
     }    
 }
 
-ListAllocator::~ListAllocator(){
-    if (munmap(this->head, this->size)){
-        std::cout << "Failed unmap" << std::endl;
-    }
+// checks if two node pointers are contiguous in memory, and returns true if they
+bool ListAllocator::checkContinuity(Node* a, Node* b){
+    return (void*) ((char*) b - (a->size + sizeof(Node))) == a;
+}
+
+// merges two contiguous nodes into one (assumes that b comes after a)
+Node* ListAllocator::mergeNodes(Node* a, Node* b){
+    Node* newNode = a; 
+    newNode->size += b->size;
+    return newNode;
 }

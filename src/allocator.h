@@ -18,4 +18,6 @@ class ListAllocator{
         Node* head {0};
         void* max;
         void* min;
+        bool checkContinuity(Node* a, Node* b);
+        Node* mergeNodes(Node* a, Node* b);
 };
