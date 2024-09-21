@@ -10,8 +10,8 @@ class ListAllocator{
         ~ListAllocator();
         void* alloc(unsigned int size);
         void dealloc(void*);
-        int get_size() {return size;}
-        int get_capacity() {return capacity;}
+        int getSize() {return size;}
+        int getCapacity() {return capacity;}
     private:
         int capacity {0};
         int size     {0};
