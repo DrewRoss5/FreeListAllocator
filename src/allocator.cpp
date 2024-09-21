@@ -14,6 +14,7 @@ ListAllocator::ListAllocator(unsigned int size){
     // create the head
     this->head = static_cast<Node*>(headPtr);
     this->head->next = nullptr;
+    this->head->prev = nullptr;
     this->head->size = size;
     // update the class metadata
     this->size = size;
@@ -47,8 +48,10 @@ void* ListAllocator::alloc(unsigned int size){
             cur->size = size;
             void* ptr = (void*) (reinterpret_cast<unsigned char*>(cur) + sizeof(Node));
             // remove cur from the list
-            if (prev)
+            if (prev){
+                newBlock->prev = prev;
                 prev->next = newBlock;
+            }
             else
                 this->head = newBlock;
             this->size -= size;
@@ -73,6 +76,7 @@ void ListAllocator::dealloc(void* ptr){
     if (newNode < this->head){
         Node* tmp = this->head;
         newNode->next = tmp;
+        tmp->prev = newNode;
         this->head = newNode;
     }
     else{
@@ -81,7 +85,10 @@ void ListAllocator::dealloc(void* ptr){
             prev = prev->next;
         Node* tmp = prev->next;
         prev->next = newNode;
-        newNode->next= tmp;
+        newNode->prev = prev;
+        newNode->next = tmp;
+        if (tmp)
+            tmp->prev = newNode;
     }    
 }
 

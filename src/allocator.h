@@ -1,6 +1,7 @@
 
 struct Node{
     Node* next  {nullptr};
+    Node* prev {nullptr};
     int size    {0};
 };
 
