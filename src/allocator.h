@@ -12,7 +12,8 @@ class ListAllocator{
         void* alloc(unsigned int size);
         void dealloc(void*);
         int getSize() {return size;}
-        int getCapacity() {return capacity;}
+        int getCapacity() {return capacity;} 
+        int getBlockCount();
     private:
         int capacity {0};
         int size     {0};

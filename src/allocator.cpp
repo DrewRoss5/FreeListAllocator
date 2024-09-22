@@ -74,21 +74,29 @@ void ListAllocator::dealloc(void* ptr){
     Node* newNode = reinterpret_cast<Node*>(ptr - sizeof(Node));
     // find where the new node belongs in memory
     if (newNode < this->head){
-        Node* tmp = this->head;
-        newNode->next = tmp;
-        tmp->prev = newNode;
-        this->head = newNode;
+        if (checkContinuity(newNode, this->head)){
+            Node* tmp = this->head->next;
+            this->head = mergeNodes(newNode, this->head);
+            if (tmp)
+                tmp->prev = this->head;
+        }
+        else{
+            Node* tmp = this->head;
+            newNode->next = tmp;
+            tmp->prev = newNode;
+            this->head = newNode;
+        }
     }
     else{
         Node* prev = this->head;
         while (prev <  newNode && prev->next)
             prev = prev->next;
-        Node* tmp = prev->next;
-        prev->next = newNode;
-        newNode->prev = prev;
-        newNode->next = tmp;
-        if (tmp)
-            tmp->prev = newNode;
+            Node* tmp = prev->next;
+            prev->next = newNode;
+            newNode->prev = prev;
+            newNode->next = tmp;
+            if (tmp)
+                tmp->prev = newNode;
     }    
 }
 
@@ -101,5 +109,17 @@ bool ListAllocator::checkContinuity(Node* a, Node* b){
 Node* ListAllocator::mergeNodes(Node* a, Node* b){
     Node* newNode = a; 
     newNode->size += b->size;
+    newNode->next = b->next;
     return newNode;
+}
+
+// this is for debugging purposes and will be removed
+int ListAllocator::getBlockCount(){
+    int count = 0;
+    Node* cur = this->head;
+    while (cur){
+        cur = cur->next;
+        count++; 
+    }
+    return count;
 }

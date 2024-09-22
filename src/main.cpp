@@ -10,8 +10,13 @@ int main(){
     for (int i = 0; i < 10; i++)
         myPtr[i] = i + 1;
     int* ptr2 = (int*) allocator.alloc(sizeof(int) * 20);
-    allocator.dealloc(myPtr);
+    std::cout << "Node count: " << allocator.getBlockCount() << std::endl;
     allocator.dealloc(ptr2);
+    std::cout << "Node count: " << allocator.getBlockCount() << std::endl;
+    allocator.dealloc(myPtr);
+
+
+    
     
 
 }
