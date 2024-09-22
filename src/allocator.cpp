@@ -26,7 +26,7 @@ ListAllocator::ListAllocator(unsigned int size){
 
 ListAllocator::~ListAllocator(){
     if (munmap(this->head, this->size))
-        std::cout << "Failed unmap" << std::endl;
+        std::cout << "Failed unmap.\nPotential memory leak" << std::endl;
 }
 
 // allocates a new void pointer of the specified size to the list
@@ -91,12 +91,26 @@ void ListAllocator::dealloc(void* ptr){
         Node* prev = this->head;
         while (prev <  newNode && prev->next)
             prev = prev->next;
+        // check if  the two nodes are contiguous in memory and merge them if so
+        if (checkContinuity(prev, newNode)){
+            std::cout << "contiguous" << std::endl;
+            Node* tmp = prev->next;
+            newNode = mergeNodes(prev, newNode);
+            if (tmp)
+                tmp->prev = newNode;
+            if (prev->prev)
+                prev->next = newNode;
+        
+        }
+        else{
             Node* tmp = prev->next;
             prev->next = newNode;
             newNode->prev = prev;
             newNode->next = tmp;
             if (tmp)
                 tmp->prev = newNode;
+        }
+
     }    
 }
 
