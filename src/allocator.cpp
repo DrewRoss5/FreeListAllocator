@@ -72,6 +72,7 @@ void ListAllocator::dealloc(void* ptr){
         throw std::bad_alloc();
     // convert the pointer into a node
     Node* newNode = reinterpret_cast<Node*>(ptr - sizeof(Node));
+    this->size += newNode->size;
     // find where the new node belongs in memory
     if (newNode < this->head){
         if (checkContinuity(newNode, this->head)){
@@ -110,8 +111,8 @@ void ListAllocator::dealloc(void* ptr){
             if (tmp)
                 tmp->prev = newNode;
         }
+    }   
 
-    }    
 }
 
 // checks if two node pointers are contiguous in memory, and returns true if they
