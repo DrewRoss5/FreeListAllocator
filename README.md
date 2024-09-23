@@ -2,8 +2,20 @@
 A simple object-oriented memory allocator implemented with a free list
 
 # Roadmap: 
-- Create a proper test suite
 - Create a constructor function (similar to new)
+
+# Getting started
+- Ensure you have GoogleTest installed
+- Clone this repo
+- Create a `build` directory in this repo's directory
+- Run the following:
+  - ```
+    cd build
+    cmake ..
+    make
+    ```
+- The `build` directory will now contain a statically linked library (`libAlloc.a`)
+- You can additionally ensure functionality by running the `Test` executable
 
 # The `ListAllocator` Class:
 The list allocator class is a heap memory allocator, it is initialized with a specific heap size and it dynamically allocates and deallocates memory. At the moment, allocated memory is returned as a `void*` simmilar to `malloc` in C. 
