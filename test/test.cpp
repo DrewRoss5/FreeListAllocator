@@ -75,7 +75,15 @@ TEST(AllocatorTests, OutOfBoundsTests){
 }
 
 // test to ensure memory is properly allocated when the size is unknown at compile time  
-
+TEST(AllocatorTests, DynamicSizeTests){
+    srand(time(nullptr));
+    int size = 4096 + rand()%1024;
+    ListAllocator allocator(size);
+    EXPECT_EQ(allocator.getSize(), size);
+    int* ptr = (int*) allocator.alloc(sizeof(int) * ((int) size / 4));
+    allocator.dealloc(ptr);  
+    EXPECT_EQ(allocator.getSize(), size);
+} 
 
 int main(int argc, char** argv){
     testing::InitGoogleTest(&argc, argv);
