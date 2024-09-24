@@ -103,8 +103,19 @@ void ListAllocator::dealloc(void* ptr){
 
 }
 
+// explicitly coalesces the list, merging all contiguous nodes. Mostly for debugging purposes, or very particular performance requirements
+void ListAllocator::coalesce(){
+    Node* prev = this->head;
+    Node* curr = prev->next;
+    while (curr){
+        if (checkContinuity(prev, curr))
+            curr = mergeNodes(prev, curr);
+        curr = curr->next;    
+    }
+}
+
 // checks if two node pointers are contiguous in memory, and returns true if they are
-bool ListAllocator::checkContinuity(Node* a, Node* b){
+bool ListAllocator::checkContinuity(Node* a, Node* b) const {
     return (void*) ((char*) b - (a->size + sizeof(Node))) == a;
 }
 
@@ -119,7 +130,7 @@ Node* ListAllocator::mergeNodes(Node* a, Node* b){
 }
 
 // this is for debugging purposes and will be removed
-int ListAllocator::getBlockCount(){
+int ListAllocator::getBlockCount() const {
     int count = 0;
     Node* cur = this->head;
     while (cur){

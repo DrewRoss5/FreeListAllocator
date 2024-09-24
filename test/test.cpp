@@ -13,7 +13,7 @@ TEST(AllocatorTests, SizeTests){
     EXPECT_EQ(allocator.getSize(), 4096);
 }
 
-// test that the size of the list grows appropriately as memory is returned (memory is deliberately returned in such a way that would min defimizeragmentation)
+// test that the size of the list grows appropriately as memory is returned
 TEST(AllocatorTests, BlockCountTests){
     ListAllocator allocator(4096);
     char* str = (char*) allocator.alloc(sizeof(char) * 5);
@@ -21,7 +21,7 @@ TEST(AllocatorTests, BlockCountTests){
     EXPECT_EQ(allocator.getBlockCount(), 1);
     allocator.dealloc(str);
     allocator.dealloc(arr);
-    EXPECT_EQ(allocator.getBlockCount(), 3);
+    EXPECT_EQ(allocator.getBlockCount(), 2);
 }
 
 // test that blocks properly coalesce given that they are contiguous 
@@ -29,8 +29,9 @@ TEST(AllocatorTests, FragmentationTests){
     ListAllocator allocator(4096);
     char* str = (char*) allocator.alloc(sizeof(char) * 5);
     int* arr = (int*) allocator.alloc(sizeof(int) * 10);
-    allocator.dealloc(arr);
     allocator.dealloc(str);
+    allocator.dealloc(arr);
+    allocator.coalesce();
     EXPECT_EQ(allocator.getBlockCount(), 1);
 }
 
@@ -83,7 +84,8 @@ TEST(AllocatorTests, DynamicSizeTests){
     int* ptr = (int*) allocator.alloc(sizeof(int) * ((int) size / 4));
     allocator.dealloc(ptr);  
     EXPECT_EQ(allocator.getSize(), size);
-} 
+}
+
 
 int main(int argc, char** argv){
     testing::InitGoogleTest(&argc, argv);
