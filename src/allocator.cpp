@@ -97,6 +97,8 @@ void ListAllocator::dealloc(void* ptr){
         if (prev->next && checkContinuity(newNode, prev->next))
             newNode = mergeNodes(newNode, prev->next);
         prev->next = newNode;
+        if (prev->next)
+            prev->next->prev = newNode;
     }   
 
 }
