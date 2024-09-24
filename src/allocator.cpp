@@ -92,30 +92,16 @@ void ListAllocator::dealloc(void* ptr){
         Node* prev = this->head;
         while (prev <  newNode && prev->next)
             prev = prev->next;
+        prev = prev->prev; // get the last node that was previous to this one
         // check if  the two nodes are contiguous in memory and merge them if so
-        if (checkContinuity(prev, newNode)){
-            std::cout << "contiguous" << std::endl;
-            Node* tmp = prev->next;
-            newNode = mergeNodes(prev, newNode);
-            if (tmp)
-                tmp->prev = newNode;
-            if (prev->prev)
-                prev->next = newNode;
-        
-        }
-        else{
-            Node* tmp = prev->next;
-            prev->next = newNode;
-            newNode->prev = prev;
-            newNode->next = tmp;
-            if (tmp)
-                tmp->prev = newNode;
-        }
+        if (prev->next && checkContinuity(newNode, prev->next))
+            newNode = mergeNodes(newNode, prev->next);
+        prev->next = newNode;
     }   
 
 }
 
-// checks if two node pointers are contiguous in memory, and returns true if they
+// checks if two node pointers are contiguous in memory, and returns true if they are
 bool ListAllocator::checkContinuity(Node* a, Node* b){
     return (void*) ((char*) b - (a->size + sizeof(Node))) == a;
 }
@@ -125,6 +111,8 @@ Node* ListAllocator::mergeNodes(Node* a, Node* b){
     Node* newNode = a; 
     newNode->size += b->size;
     newNode->next = b->next;
+    if (b->next)
+        b->next->prev = newNode;
     return newNode;
 }
 
