@@ -5,7 +5,7 @@ A simple object-oriented memory allocator implemented with a free list
 - Create a constructor function (similar to new)
 
 # Getting started
-- Ensure you have GoogleTest installed
+- Ensure you have [GoogleTest](https://github.com/google/googletest/tree/main/googletest) installed
 - Clone this repo
 - Create a `build` directory in this repo's directory
 - Run the following:
