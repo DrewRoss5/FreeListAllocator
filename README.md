@@ -2,7 +2,7 @@
 A simple object-oriented memory allocator implemented with a free list
 
 # Roadmap: 
-- Create a constructor function (similar to new)
+- Create a reallocate function
 
 # Getting started
 - Ensure you have [GoogleTest](https://github.com/google/googletest/tree/main/googletest) installed
