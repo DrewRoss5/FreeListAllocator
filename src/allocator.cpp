@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
+#include <string.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <stdexcept>
@@ -43,6 +44,7 @@ void* ListAllocator::alloc(unsigned int size){
             Node* newBlock = reinterpret_cast<Node*>(reinterpret_cast<unsigned char*>(cur) + sizeof(Node) + size);
             newBlock->size = cur->size - (size + sizeof(Node));
             newBlock->next = cur->next;
+            newBlock->prev = cur->prev;
             // create the pointer to be returned
             cur->next = newBlock;
             cur->size = size;
@@ -71,36 +73,74 @@ void ListAllocator::dealloc(void* ptr){
     if (ptr > max || ptr < min)
         throw std::bad_alloc();
     // convert the pointer into a node
-    Node* newNode = reinterpret_cast<Node*>(ptr - sizeof(Node));
-    this->size += newNode->size;
+    Node* newBlock = reinterpret_cast<Node*>(((char*) ptr) - sizeof(Node));
+    this->size += newBlock->size;
     // find where the new node belongs in memory
-    if (newNode < this->head){
-        if (checkContinuity(newNode, this->head)){
+    if (newBlock < this->head){
+        if (checkContinuity(newBlock, this->head)){
             Node* tmp = this->head->next;
-            this->head = mergeNodes(newNode, this->head);
+            this->head = mergeNodes(newBlock, this->head);
             if (tmp)
                 tmp->prev = this->head;
         }
         else{
             Node* tmp = this->head;
-            newNode->next = tmp;
-            tmp->prev = newNode;
-            this->head = newNode;
+            newBlock->next = tmp;
+            tmp->prev = newBlock;
+            this->head = newBlock;
         }
     }
     else{
         Node* prev = this->head;
-        while (prev <  newNode && prev->next)
+        while (prev <  newBlock && prev->next)
             prev = prev->next;
         prev = prev->prev; // get the last node that was previous to this one
         // check if  the two nodes are contiguous in memory and merge them if so
-        if (prev->next && checkContinuity(newNode, prev->next))
-            newNode = mergeNodes(newNode, prev->next);
-        prev->next = newNode;
+        if (prev->next && checkContinuity(newBlock, prev->next))
+            newBlock = mergeNodes(newBlock, prev->next);
+        prev->next = newBlock;
         if (prev->next)
-            prev->next->prev = newNode;
+            prev->next->prev = newBlock;
     }   
+}
 
+// reallocates the given pointer, extending it in place if possible, or copying it to a new address if not possible. Returns a nullptr if no appropriate block can be found
+void* ListAllocator::realloc(void* ptr, unsigned int newSize){ 
+    if (ptr > max || ptr < min)
+        throw std::bad_alloc();
+    // convert the pointer into a node
+    Node* ptrBlock = reinterpret_cast<Node*>(((char*) ptr) - sizeof(Node));
+    // this is temporary, in future versions, shrinking will be allowed
+    if (ptrBlock->size > newSize)
+        throw std::bad_array_new_length();
+    // find a contiguous block if possible
+    Node* cur = this->head;
+    Node* newBlock = nullptr;
+    while (cur){
+        if (checkContinuity(ptrBlock, cur) && (ptrBlock->size + cur->size) >= newSize){
+            newBlock = cur;
+            break;
+        }
+    }
+    // contiguous block found, simply increase the size of the given black
+    if (newBlock){
+        // move the newNode forward
+        Node* next = newBlock->next;
+        Node* prev = newBlock->prev;
+        newBlock = reinterpret_cast<Node*>((void*) (reinterpret_cast<char*>(newBlock) + (newSize - ptrBlock->size )));
+        newBlock->prev = prev;
+        newBlock->next = next;
+        newBlock->size = newSize - ptrBlock->size;
+        // resize and return this block
+        this->size -= newSize - ptrBlock->size;
+        ptrBlock->size = newSize;
+        return (void*) (reinterpret_cast<unsigned char*>(ptrBlock) + sizeof(Node));
+    }
+    // no contiguous block could be found
+    void* newPtr = this->alloc(newSize);
+    memcpy(newPtr, ptr, ptrBlock->size);
+    this->dealloc(ptr);
+    return newPtr;
 }
 
 // explicitly coalesces the list, merging all contiguous nodes. Mostly for debugging purposes, or very particular performance requirements
@@ -121,12 +161,12 @@ bool ListAllocator::checkContinuity(Node* a, Node* b) const {
 
 // merges two contiguous nodes into one (assumes that b comes after a)
 Node* ListAllocator::mergeNodes(Node* a, Node* b){
-    Node* newNode = a; 
-    newNode->size += b->size;
-    newNode->next = b->next;
+    Node* newBlock = a; 
+    newBlock->size += b->size;
+    newBlock->next = b->next;
     if (b->next)
-        b->next->prev = newNode;
-    return newNode;
+        b->next->prev = newBlock;
+    return newBlock;
 }
 
 // this is for debugging purposes and will be removed
