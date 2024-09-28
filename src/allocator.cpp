@@ -131,6 +131,8 @@ void* ListAllocator::realloc(void* ptr, unsigned int newSize){
         newBlock->prev = prev;
         newBlock->next = next;
         newBlock->size = newSize - ptrBlock->size;
+        if (!newBlock->prev)
+            this->head = newBlock;    
         // resize and return this block
         this->size -= newSize - ptrBlock->size;
         ptrBlock->size = newSize;
