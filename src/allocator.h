@@ -24,4 +24,5 @@ class ListAllocator{
         void* min {nullptr};
         bool checkContinuity(Node* a, Node* b) const;
         Node* mergeNodes(Node* a, Node* b);
+        void insertNode(Node* node);
 };

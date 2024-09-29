@@ -75,33 +75,8 @@ void ListAllocator::dealloc(void* ptr){
     // convert the pointer into a node
     Node* newBlock = reinterpret_cast<Node*>(((char*) ptr) - sizeof(Node));
     this->size += newBlock->size;
-    // find where the new node belongs in memory
-    if (newBlock < this->head){
-        if (checkContinuity(newBlock, this->head)){
-            Node* tmp = this->head->next;
-            this->head = mergeNodes(newBlock, this->head);
-            if (tmp)
-                tmp->prev = this->head;
-        }
-        else{
-            Node* tmp = this->head;
-            newBlock->next = tmp;
-            tmp->prev = newBlock;
-            this->head = newBlock;
-        }
-    }
-    else{
-        Node* prev = this->head;
-        while (prev <  newBlock && prev->next)
-            prev = prev->next;
-        prev = prev->prev; // get the last node that was previous to this one
-        // check if  the two nodes are contiguous in memory and merge them if so
-        if (prev->next && checkContinuity(newBlock, prev->next))
-            newBlock = mergeNodes(newBlock, prev->next);
-        prev->next = newBlock;
-        if (prev->next)
-            prev->next->prev = newBlock;
-    }   
+    // return the block
+    this->insertNode(newBlock);
 }
 
 // reallocates the given pointer, extending it in place if possible, or copying it to a new address if not possible. Returns a nullptr if no appropriate block can be found
@@ -110,9 +85,15 @@ void* ListAllocator::realloc(void* ptr, unsigned int newSize){
         throw std::bad_alloc();
     // convert the pointer into a node
     Node* ptrBlock = reinterpret_cast<Node*>(((char*) ptr) - sizeof(Node));
-    // this is temporary, in future versions, shrinking will be allowed
-    if (ptrBlock->size > newSize)
-        throw std::bad_array_new_length();
+    // shrink the block and return the excess if the size is smaller than the current size
+    if (ptrBlock->size > newSize){
+        int dif = ptrBlock->size - newSize;
+        Node* newBlock = reinterpret_cast<Node*> (((char*) ptr) + newSize + sizeof(Node));
+        newBlock->size = dif;
+        ptrBlock->size = newSize;
+        this->size += dif;
+        return ptr;
+    }
     // find a contiguous block if possible
     Node* cur = this->head;
     Node* newBlock = nullptr;
@@ -169,6 +150,37 @@ Node* ListAllocator::mergeNodes(Node* a, Node* b){
     if (b->next)
         b->next->prev = newBlock;
     return newBlock;
+}
+
+// inserts a new node, in order, into the free list, coallescing the new node if it's contiguous with it's neighbor
+void ListAllocator::insertNode(Node* block){
+        // find where the new node belongs in memory
+    if (block < this->head){
+        if (checkContinuity(block, this->head)){
+            Node* tmp = this->head->next;
+            this->head = mergeNodes(block, this->head);
+            if (tmp)
+                tmp->prev = this->head;
+        }
+        else{
+            Node* tmp = this->head;
+            block->next = tmp;
+            tmp->prev = block;
+            this->head = block;
+        }
+    }
+    else{
+        Node* prev = this->head;
+        while (prev <  block && prev->next)
+            prev = prev->next;
+        prev = prev->prev; // get the last node that was previous to this one
+        // check if  the two nodes are contiguous in memory and merge them if so
+        if (prev->next && checkContinuity(block, prev->next))
+            block = mergeNodes(block, prev->next);
+        prev->next = block;
+        if (prev->next)
+            prev->next->prev = block;
+    }   
 }
 
 // this is for debugging purposes and will be removed

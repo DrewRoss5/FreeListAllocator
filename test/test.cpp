@@ -87,7 +87,8 @@ TEST(AllocatorTests, DynamicSizeTests){
 }
 
 // test to ensure that that memory reallocates properly (TODO: Add more edge cases to this)
-TEST(AllocatorTests, RealloTests){
+TEST(AllocatorTests, ReallocTests){
+    // test growing
     ListAllocator allocator(4096);
     int* odds = (int*) allocator.alloc(sizeof(int) * 5);
     for (int i = 0; i < 5; i++){
@@ -112,6 +113,17 @@ TEST(AllocatorTests, RealloTests){
     }
     allocator.dealloc(odds);
     EXPECT_EQ(allocator.getSize(), 4096);
+    // test shrinking
+    int* nums = (int*) allocator.alloc(sizeof(int) * 10);
+    for (int i = 0; i < 5; i++)
+        nums[i] = i + 1;
+    allocator.realloc(nums, sizeof(int) * 5);
+    EXPECT_EQ(allocator.getSize(), 4096 - (sizeof(int) * 5));
+    for (int i = 0; i < 5; i++)
+        EXPECT_EQ(nums[i], i + 1);
+    allocator.dealloc(nums);
+    EXPECT_EQ(allocator.getSize(), 4096);
+
 }
 
 
