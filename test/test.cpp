@@ -86,6 +86,34 @@ TEST(AllocatorTests, DynamicSizeTests){
     EXPECT_EQ(allocator.getSize(), size);
 }
 
+// test to ensure that that memory reallocates properly (TODO: Add more edge cases to this)
+TEST(AllocatorTests, RealloTests){
+    ListAllocator allocator(4096);
+    int* odds = (int*) allocator.alloc(sizeof(int) * 5);
+    for (int i = 0; i < 5; i++){
+        if (i % 2 == 0)
+            odds[i] = i + 1;
+        else 
+            odds[i] = i + 2;
+    }
+    allocator.realloc(odds, (sizeof(int) * 10));
+    for (int i = 5; i < 10; i++){
+        if (i % 2 == 0)
+            odds[i] = i + 1;
+        else 
+            odds[i] = i + 2;
+    }
+    EXPECT_EQ(allocator.getSize(), 4096 - (sizeof(int) * 10));
+    for (int i = 0; i < 10; i++){
+        if (i % 2 == 0)
+            EXPECT_EQ(odds[i], i + 1);
+        else 
+            EXPECT_EQ(odds[i], i + 2);
+    }
+    allocator.dealloc(odds);
+    EXPECT_EQ(allocator.getSize(), 4096);
+}
+
 
 int main(int argc, char** argv){
     testing::InitGoogleTest(&argc, argv);
