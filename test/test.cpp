@@ -8,7 +8,7 @@ TEST(AllocatorTests, SizeTests){
     ListAllocator allocator(4096);
     EXPECT_EQ(allocator.getSize(), 4096);
     int* ptr = (int*) allocator.alloc(sizeof(int) * 20);
-    EXPECT_EQ(allocator.getSize(), 4096 - (sizeof(int) * 20));
+    EXPECT_EQ(allocator.getSize(), 4096 - (sizeof(int) * 20) - sizeof(Node));
     allocator.dealloc(ptr);
     EXPECT_EQ(allocator.getSize(), 4096);
 }
@@ -104,7 +104,7 @@ TEST(AllocatorTests, ReallocTests){
         else 
             odds[i] = i + 2;
     }
-    EXPECT_EQ(allocator.getSize(), 4096 - (sizeof(int) * 10));
+    EXPECT_EQ(allocator.getSize(), 4096 - (sizeof(int) * 10 + sizeof(Node)));
     for (int i = 0; i < 10; i++){
         if (i % 2 == 0)
             EXPECT_EQ(odds[i], i + 1);
@@ -118,7 +118,7 @@ TEST(AllocatorTests, ReallocTests){
     for (int i = 0; i < 5; i++)
         nums[i] = i + 1;
     allocator.realloc(nums, sizeof(int) * 5);
-    EXPECT_EQ(allocator.getSize(), 4096 - (sizeof(int) * 5));
+    EXPECT_EQ(allocator.getSize(), 4096 - (sizeof(int) * 5 + sizeof(Node)));
     for (int i = 0; i < 5; i++)
         EXPECT_EQ(nums[i], i + 1);
     allocator.dealloc(nums);

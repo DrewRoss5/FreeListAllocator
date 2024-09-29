@@ -56,7 +56,7 @@ void* ListAllocator::alloc(unsigned int size){
             }
             else
                 this->head = newBlock;
-            this->size -= size;
+            this->size -= size + sizeof(Node);
             return ptr;
         }
         // continue traversing the list
@@ -74,7 +74,7 @@ void ListAllocator::dealloc(void* ptr){
         throw std::bad_alloc();
     // convert the pointer into a node
     Node* newBlock = reinterpret_cast<Node*>(((char*) ptr) - sizeof(Node));
-    this->size += newBlock->size;
+    this->size += newBlock->size + sizeof(Node);
     // return the block
     this->insertNode(newBlock);
 }
