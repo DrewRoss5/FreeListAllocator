@@ -1,9 +1,6 @@
 # FreeListAllocator
 A simple object-oriented memory allocator implemented with a free list
 
-# Roadmap: 
-- Allow realloc to shrink blocks in addition to growing them 
-
 # Getting started
 - Ensure you have [GoogleTest](https://github.com/google/googletest/tree/main/googletest) installed
 - Clone this repo
