@@ -32,6 +32,13 @@ The list allocator class is a heap memory allocator, it is initialized with a sp
   - Frees the memory associated with `ptr`, releasing the block to the free list.
   - Notes:
     - Throws a `std::bad_alloc` if `ptr` was not allocated by this object.
+### void* realloc(void* ptr, unsigned int newSize):
+  - Reallocates `ptr` to make `newSize` bytes large. This works for both growing and shrinking memory.
+  - Notes:
+    - If the memory pointed to by `ptr` is shrunk, the excess will simply be returned to the allocator as a new block.
+    - If the memory is grown, the block will simply be extended in place, if enough contiguous space is available. Otherwise, the pointer will be reallocated to a new block. This means that using `realloc` may be more efficent than creating a
+      new pointer and copying the data manually, however, it is not guranteed to be such.
+    - Throws a `std::bad_alloc` if `ptr` was not allocated by this object.
 ### int getSize():
   - Returns the current number of available bytes.
 ### int getCapacity()
